@@ -1,16 +1,35 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import SplashScreen from "./SplashScreen";
+import AuthScreen from "./AuthScreen";
+import MapScreen from "./MapScreen";
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+type Screen = "splash" | "auth" | "map";
+
+const Index = () => {
+  const [screen, setScreen] = useState<Screen>("splash");
+
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
+    <div className="max-w-md mx-auto h-screen overflow-hidden relative">
+      <AnimatePresence mode="wait">
+        {screen === "splash" && (
+          <motion.div key="splash" exit={{ opacity: 0 }} transition={{ duration: 0.4 }} className="h-full">
+            <SplashScreen onContinue={() => setScreen("auth")} />
+          </motion.div>
+        )}
+        {screen === "auth" && (
+          <motion.div key="auth" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }} className="h-full">
+            <AuthScreen onLogin={() => setScreen("map")} />
+          </motion.div>
+        )}
+        {screen === "map" && (
+          <motion.div key="map" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }} className="h-full">
+            <MapScreen />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;
