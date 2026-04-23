@@ -42,7 +42,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 const FAB_SIZE = 72;
-const AURORA_SIZE = 180;
+const AURORA_SIZE = 240;
 
 type Props = {
   onPress?: () => void;
@@ -117,6 +117,62 @@ const AuroraRing = ({
         style={StyleSheet.absoluteFill}
       />
     </Animated.View>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
+/*                          Concentric Pulse Ring                             */
+/* -------------------------------------------------------------------------- */
+
+const PulseRing = ({
+  delay = 0,
+  duration = 3800,
+  baseSize = FAB_SIZE,
+  maxSize = AURORA_SIZE,
+  color = '#A78BFA',
+}: {
+  delay?: number;
+  duration?: number;
+  baseSize?: number;
+  maxSize?: number;
+  color?: string;
+}) => {
+  const t = useSharedValue(0);
+
+  useEffect(() => {
+    t.value = withDelay(
+      delay,
+      withRepeat(
+        withTiming(1, { duration, easing: Easing.out(Easing.quad) }),
+        -1,
+        false,
+      ),
+    );
+  }, [delay, duration, t]);
+
+  const style = useAnimatedStyle(() => {
+    const scale = interpolate(t.value, [0, 1], [baseSize / maxSize, 1]);
+    const opacity = interpolate(t.value, [0, 0.15, 1], [0, 0.45, 0]);
+    return {
+      opacity,
+      transform: [{ scale }],
+    };
+  });
+
+  return (
+    <Animated.View
+      pointerEvents="none"
+      style={[
+        styles.pulseRing,
+        {
+          width: maxSize,
+          height: maxSize,
+          borderRadius: maxSize / 2,
+          borderColor: color,
+        },
+        style,
+      ]}
+    />
   );
 };
 
@@ -256,6 +312,13 @@ const AuroraFAB: React.FC<Props> = ({ onPress, style }) => {
         />
       </View>
 
+      {/* Concentric expanding pulse rings — Siri/sonar energy */}
+      <View style={styles.auroraContainer} pointerEvents="none">
+        <PulseRing delay={0} duration={3800} color="#A78BFA" />
+        <PulseRing delay={1300} duration={3800} color="#C084FC" />
+        <PulseRing delay={2600} duration={3800} color="#F0A6E0" />
+      </View>
+
       {/* Drifting particles */}
       <View style={styles.particleContainer} pointerEvents="none">
         {particles.map((cfg, i) => (
@@ -332,6 +395,11 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  pulseRing: {
+    position: 'absolute',
+    borderWidth: 1.5,
+    backgroundColor: 'transparent',
   },
   particle: {
     position: 'absolute',
